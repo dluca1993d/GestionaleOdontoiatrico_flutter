@@ -4,21 +4,21 @@ import 'package:esercizi/services/SalvaInCartellaClinica.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 
-class DentePage extends StatefulWidget {
-  final String numeroDente;  // es. "43"
-  final String nomeDente;    // es. "Canino Inferiore DX"
+/// Classe generica per gestire qualsiasi tipo di prestazione
+/// (Igiene, Visita, Radiografia, ecc.)
+class PrestazionePage extends StatefulWidget {
+  final String tipoPrestazione;  // es. "Igiene Dentale", "Visita", "Radiografia"
   
-  const DentePage({
+  const PrestazionePage({
     super.key,
-    required this.numeroDente,
-    required this.nomeDente,
+    required this.tipoPrestazione,
   });
 
   @override
-  State<DentePage> createState() => _DentePageState();
+  State<PrestazionePage> createState() => _PrestazionePageState();
 }
 
-class _DentePageState extends State<DentePage> {
+class _PrestazionePageState extends State<PrestazionePage> {
 
   List<datiCliente> clienti = []; //Carica tutta la lista clienti
   List<datiCliente> clientiFiltrati = []; //lista dei clienti che vengono man mano filtrati
@@ -30,14 +30,32 @@ class _DentePageState extends State<DentePage> {
   int? meseSelezionato;
   int? annoSelezionato;
 
-  //variabile x selezionare tipologia prestazione
-  String? tipologiaSelezionata;
-  List<String> tipoPrestazione = ["Carie", "Devitalizzazione", "Estrazione", "Ortodonzia", "Protesi", "Chirurgia"];
+  //variabile x selezionare tipologia prestazione specifica (opzionale)
+  String? sottotipoSelezionato;
+  List<String> sottotipi = [];
 
   @override
   void initState() {
     super.initState();
     _caricaClienti();
+    _inizializzaSottotipi();
+  }
+
+  // Inizializza i sottotipi in base al tipo di prestazione
+  void _inizializzaSottotipi() {
+    switch (widget.tipoPrestazione) {
+      case "Igiene Dentale":
+        sottotipi = ["Detartrasi", "Ablazione tartaro", "Lucidatura", "Fluoroprofilassi"];
+        break;
+      case "Visita":
+        sottotipi = ["Prima visita", "Visita di controllo", "Visita urgenza", "Consulto"];
+        break;
+      case "Radiografia":
+        sottotipi = ["Panoramica", "Endorale", "TC Cone Beam", "Teleradiografia"];
+        break;
+      default:
+        sottotipi = []; // Nessun sottotipo
+    }
   }
 
   @override
@@ -45,7 +63,7 @@ class _DentePageState extends State<DentePage> {
    
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.numeroDente} - ${widget.nomeDente}"),
+        title: Text(widget.tipoPrestazione),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -54,9 +72,8 @@ class _DentePageState extends State<DentePage> {
         children: [
           TextField(
             decoration: InputDecoration(prefixIcon: Icon(Icons.search)),
-            onChanged: (value) {  //onChanged=funzione che si attiva ogni volta che si digia
-              setState(() {  //Ridisegna la pag aggiornando la lista
-                //clienti.where((cliente) { ... })= Prende la lista completa dei clienti e li scorre uno per uno.
+            onChanged: (value) {
+              setState(() {
                 clientiFiltrati = clienti.where((cliente) {
                   final nomeCompleto = "${cliente.nome} ${cliente.cognome}";
                   return nomeCompleto.contains(value);
@@ -87,8 +104,8 @@ class _DentePageState extends State<DentePage> {
                   ),
                 ),
 
-//PER SELEZIONE DATA
-            Padding(
+          //PER SELEZIONE DATA
+          Padding(
             padding: EdgeInsets.all(5),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -101,7 +118,8 @@ class _DentePageState extends State<DentePage> {
                       .map((giorno) => DropdownMenuItem<int>(
                             value: giorno,
                             child: Text(giorno.toString()),
-                          )).toList(),
+                          ))
+                      .toList(),
                   onChanged: (val) {
                     setState(() {
                       giornoSelezionato = val!;
@@ -109,70 +127,67 @@ class _DentePageState extends State<DentePage> {
                   },
                 ),
 
-      // Mese
-              DropdownButton<int>(
-                value: meseSelezionato,
-                hint: Text("Mese"),
-                items: List.generate(12, (index) => index + 1)
-                    .map((mese) => DropdownMenuItem<int>(
-                          value: mese,
-                          child: Text(mese.toString()),
-                        ))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() {
-                    meseSelezionato = val!;
-                  });
-                },
-              ),
+                // Mese
+                DropdownButton<int>(
+                  value: meseSelezionato,
+                  hint: Text("Mese"),
+                  items: List.generate(12, (index) => index + 1)
+                      .map((mese) => DropdownMenuItem<int>(
+                            value: mese,
+                            child: Text(mese.toString()),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      meseSelezionato = val!;
+                    });
+                  },
+                ),
 
-      // Anno
-            DropdownButton<int>(
-              value: annoSelezionato,
-              hint: Text("Anno"),
-              items: List.generate(2050 - 1900 + 1, (index) => 1900 + index)
-                  .map((anno) => DropdownMenuItem<int>(
-                        value: anno,
-                        child: Text(anno.toString()),
-                      ))
-                  .toList(),
-              onChanged: (val) {
+                // Anno
+                DropdownButton<int>(
+                  value: annoSelezionato,
+                  hint: Text("Anno"),
+                  items: List.generate(2050 - 1900 + 1, (index) => 1900 + index)
+                      .map((anno) => DropdownMenuItem<int>(
+                            value: anno,
+                            child: Text(anno.toString()),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      annoSelezionato = val!;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // DROPDOWN SOTTOTIPO (se ci sono sottotipi disponibili)
+          if (sottotipi.isNotEmpty)
+            DropdownButton<String>(
+              hint: Text("Seleziona tipologia"),
+              value: sottotipoSelezionato,
+              items: sottotipi.map((tipo) {
+                return DropdownMenuItem(
+                  value: tipo,
+                  child: Text(tipo),
+                );
+              }).toList(),
+              onChanged: (value) {
                 setState(() {
-                  annoSelezionato = val!;
+                  sottotipoSelezionato = value;
                 });
               },
             ),
-          ],
-        ),
-      ),
-
-              
-
-DropdownButton<String>(
-  hint: Text("Seleziona tipologia"),
-  value: tipologiaSelezionata,
-  items: tipoPrestazione.map((tipo) {
-    return DropdownMenuItem(
-      value: tipo,
-      child: Text(tipo),
-    );
-  }).toList(),
-  onChanged: (value) {
-    setState(() {
-      tipologiaSelezionata = value; // si precompila il dropdown con la voce cliccata
-    });
-  },
-),
-
-
-
 
           // CAMPO NOTE (visibile solo se un cliente è selezionato)
           if (clienteSelezionato != null)
             Padding(
               padding: EdgeInsets.all(12),
               child: Container(
-                height: 200, // altezza fissa, il contenuto interno scrolla
+                height: 200,
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
@@ -180,10 +195,10 @@ DropdownButton<String>(
                 ),
                 child: SingleChildScrollView(
                   child: TextField(
-                    maxLines: null, // multilinea infinita
+                    maxLines: null,
                     keyboardType: TextInputType.multiline,
                     onChanged: (value) {
-                      notaDigitata = value; // aggiorna la variabile mentre digito
+                      notaDigitata = value;
                     },
                     decoration: InputDecoration(
                       hintText: "Scrivi una nota...",
@@ -202,11 +217,10 @@ DropdownButton<String>(
                 return ListTile(
                   title: Text("${cliente.nome} ${cliente.cognome}"),
                   subtitle: Text("${cliente.dataNascita} ${cliente.cf}"),
-                  //SELEZIONO IL CLIENTE E SI CANCELLA LA LISTA DEI FILTRATI
                   onTap: () {
                     setState(() {
-                      clienteSelezionato = clientiFiltrati[index]; //salvo il cliente che ho filtrato e selezionato
-                      clientiFiltrati.clear(); //pulisco la lista che mi esce quando filtro, appena dopo il tap
+                      clienteSelezionato = clientiFiltrati[index];
+                      clientiFiltrati.clear();
                     });
                   },
                 );
@@ -214,37 +228,39 @@ DropdownButton<String>(
             ),
           ),
 
-          
-    //BOTTONE SALVA CON FUNZIONE
-         Padding(
-           padding: const EdgeInsets.all(50.0),
-           child: ElevatedButton(
-             onPressed: ()async{
-              await SalvaInCartellaClinica.salvaPrestazione(
-                idPaziente: clienteSelezionato!.id.toString(),
-                nome: clienteSelezionato!.nome,
-                cognome: clienteSelezionato!.cognome,
-                data: "${giornoSelezionato!}/${meseSelezionato!}/${annoSelezionato!}",
-                tipoPrestazione: tipologiaSelezionata!,
-                dente: widget.nomeDente,  // 🎯 Usa il nome del dente passato come parametro
-                note: notaDigitata,
+          //BOTTONE SALVA
+          Padding(
+            padding: const EdgeInsets.all(50.0),
+            child: ElevatedButton(
+              onPressed: () async {
+                // Costruisce la tipologia completa
+                String tipologiaCompleta = widget.tipoPrestazione;
+                if (sottotipoSelezionato != null) {
+                  tipologiaCompleta += " - $sottotipoSelezionato";
+                }
+
+                await SalvaInCartellaClinica.salvaPrestazione(
+                  idPaziente: clienteSelezionato!.id.toString(),
+                  nome: clienteSelezionato!.nome,
+                  cognome: clienteSelezionato!.cognome,
+                  data: "${giornoSelezionato!}/${meseSelezionato!}/${annoSelezionato!}",
+                  tipoPrestazione: tipologiaCompleta,
+                  dente: "N/A", // Non applicabile per prestazioni generali
+                  note: notaDigitata,
                 );
-              
-              // 🔙 Torna indietro automaticamente dopo il salvataggio
-              if (mounted) {
-                Navigator.pop(context);
-              }
-             }, 
-             
-             style: ElevatedButton.styleFrom(
-                     backgroundColor: Colors.blue,
-                     foregroundColor: Colors.white), 
-                     child: 
-                       Text("SALVA")),
-                      ), 
-                      // 
-
-
+                
+                // 🔙 Torna indietro automaticamente dopo il salvataggio
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: Text("SALVA"),
+            ),
+          ),
         ],
       ),
     );
@@ -252,11 +268,8 @@ DropdownButton<String>(
 
   void _caricaClienti() async {
     final prefs = await SharedPreferences.getInstance();
-
-    // Legge la lista salvata (lista di stringhe JSON)
     final listaJson = prefs.getStringList("clienti");
 
-    // Se non esiste ancora la chiave
     if (listaJson == null) {
       setState(() {
         clienti = [];
@@ -265,25 +278,22 @@ DropdownButton<String>(
       return;
     }
 
-    // Decodifica: da JSON-> datiCliente
     List<datiCliente> listaDecodificata = [];
 
     for (var jsonString in listaJson) {
-      try { //uso un loop con try/catch per ignorare eventuali JSON malformati.
-        final map = jsonDecode(jsonString); //converte la stringa JSON in una mappa
+      try {
+        final map = jsonDecode(jsonString);
         listaDecodificata.add(datiCliente.fromJson(map));
       } catch (e) {
-        // JSON malformato-> viene saltato
         continue;
       }
     }
 
-    // Aggiorna la UI SOLO se il widget è ancora attivo
-    if (!mounted) return; //controlla se lo State è ancora montato nel widget tree.
+    if (!mounted) return;
 
     setState(() {
-      clienti = listaDecodificata; // lista completa
-      clientiFiltrati = []; // parte vuota finché non si digita
+      clienti = listaDecodificata;
+      clientiFiltrati = [];
     });
   }
 }

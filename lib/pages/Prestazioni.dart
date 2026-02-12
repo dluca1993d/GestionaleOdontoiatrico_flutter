@@ -1,10 +1,8 @@
-import 'package:esercizi/pages/ClassiPrestazioni/Igiene.dart';
-import 'package:esercizi/pages/ClassiPrestazioni/Visita.dart';
+import 'package:esercizi/pages/ClassiPrestazioni/altrePrestazioni/Igiene.dart';
+import 'package:esercizi/pages/ClassiPrestazioni/altrePrestazioni/Visita.dart';
 import 'package:esercizi/pages/ClassiPrestazioni/odontogramma/denti_data.dart';
 import 'package:esercizi/pages/ClassiPrestazioni/odontogramma/dente_page.dart';
-import 'package:esercizi/pages/pages.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Prestazioni extends StatefulWidget {
   @override

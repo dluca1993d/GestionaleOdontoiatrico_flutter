@@ -11,7 +11,7 @@ class CartellaClinica extends StatefulWidget {
 class _CartellaClinicaState extends State<CartellaClinica> {
 
   /*
-    Questa mappa serve per costruire l’elenco dei pazienti da mostrare a schermo.
+    Questa mappa serve per costruire l'elenco dei pazienti da mostrare a schermo.
 
     Struttura:
     {
@@ -48,7 +48,7 @@ class _CartellaClinicaState extends State<CartellaClinica> {
     Questa funzione:
     - legge TUTTE le chiavi salvate in SharedPreferences
     - prende solo quelle che iniziano con "prestazioni_"
-    - da lì ricava l’elenco dei pazienti che hanno almeno
+    - da lì ricava l'elenco dei pazienti che hanno almeno
       una prestazione salvata
   */
   Future<void> _caricaPazienti() async {
@@ -115,7 +115,7 @@ class _CartellaClinicaState extends State<CartellaClinica> {
 
     /*
       Aggiorna lo stato della pagina.
-      Questo forza il sistema a ridisegnare l’interfaccia usando i nuovi dati caricati.
+      Questo forza il sistema a ridisegnare l'interfaccia usando i nuovi dati caricati.
     */
     setState(() {
       pazienti = risultati;
@@ -123,9 +123,61 @@ class _CartellaClinicaState extends State<CartellaClinica> {
   }
 
 
+  /*
+    🗑️ NUOVA FUNZIONE: Cancella tutte le prestazioni di un paziente
+  */
+  Future<void> _cancellaPaziente(String id, String nome, String cognome) async {
+    // Mostra dialog di conferma
+    bool? conferma = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Conferma cancellazione"),
+        content: Text(
+          "Sei sicuro di voler cancellare TUTTE le prestazioni di:\n\n"
+          "$nome $cognome (ID: $id)?\n\n"
+          "Questa operazione è irreversibile!",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("ANNULLA"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text("CANCELLA"),
+          ),
+        ],
+      ),
+    );
+
+    // Se l'utente conferma
+    if (conferma == true) {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'prestazioni_$id';
+
+      // Cancella la chiave dal SharedPreferences
+      await prefs.remove(key);
+
+      // Mostra messaggio di conferma
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Paziente $nome $cognome cancellato con successo"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // Ricarica la lista aggiornata
+      _caricaPazienti();
+    }
+  }
+
+
 
   /*
-    build costruisce l’interfaccia grafica.
+    build costruisce l'interfaccia grafica.
     Viene richiamato ogni volta che cambia lo stato.
   */
   @override
@@ -165,7 +217,21 @@ class _CartellaClinicaState extends State<CartellaClinica> {
                 return ListTile(
                   title: Text("$nome $cognome"),
                   subtitle: Text("ID paziente: $id"),
-                  trailing: Icon(Icons.arrow_forward_ios),
+                  
+                  // 🗑️ NUOVO: Aggiungo icona del cestino
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icona cestino per cancellare
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _cancellaPaziente(id, nome, cognome),
+                        tooltip: "Cancella paziente",
+                      ),
+                      // Freccia per visualizzare prestazioni
+                      Icon(Icons.arrow_forward_ios),
+                    ],
+                  ),
 
                   /*
                     Quando clicco un paziente:
@@ -178,7 +244,11 @@ class _CartellaClinicaState extends State<CartellaClinica> {
                         builder: (_) =>
                             PrestazioniPaziente(idPaziente: id),
                       ),
-                    );
+                    ).then((_) {
+                      // Quando torno indietro, ricarico la lista
+                      // (nel caso siano state cancellate prestazioni singole)
+                      _caricaPazienti();
+                    });
                   },
                 );
               },
@@ -227,6 +297,76 @@ class _PrestazioniPazienteState extends State<PrestazioniPaziente> {
     }
   }
 
+  /*
+    🗑️ NUOVA FUNZIONE: Cancella una singola prestazione
+  */
+  Future<void> _cancellaPrestazione(int index) async {
+    final p = prestazioni[index];
+    
+    // Mostra dialog di conferma
+    bool? conferma = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Conferma cancellazione"),
+        content: Text(
+          "Vuoi cancellare questa prestazione?\n\n"
+          "Data: ${p['data']}\n"
+          "Tipo: ${p['tipoPrestazione']}\n"
+          "Dente: ${p['dente']}",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("ANNULLA"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text("CANCELLA"),
+          ),
+        ],
+      ),
+    );
+
+    // Se l'utente conferma
+    if (conferma == true) {
+      // Rimuovi la prestazione dalla lista
+      setState(() {
+        prestazioni.removeAt(index);
+      });
+
+      // Salva la lista aggiornata in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'prestazioni_${widget.idPaziente}';
+      
+      if (prestazioni.isEmpty) {
+        // Se non ci sono più prestazioni, cancella la chiave
+        await prefs.remove(key);
+      } else {
+        // Altrimenti salva la lista aggiornata
+        List<String> listaJson = prestazioni
+            .map((e) => jsonEncode(e))
+            .toList();
+        await prefs.setStringList(key, listaJson);
+      }
+
+      // Mostra messaggio di conferma
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Prestazione cancellata"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // Se non ci sono più prestazioni, torna indietro
+      if (prestazioni.isEmpty && mounted) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -256,9 +396,22 @@ class _PrestazioniPazienteState extends State<PrestazioniPaziente> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text("Dente: ${p['dente']}"),
-                    trailing: Icon(Icons.arrow_forward_ios),
+                    
+                    // 🗑️ NUOVO: Aggiungo icona cestino per cancellare
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _cancellaPrestazione(index),
+                          tooltip: "Cancella prestazione",
+                        ),
+                        Icon(Icons.arrow_forward_ios),
+                      ],
+                    ),
+                    
                     onTap: () {
-                      // QUI in futuro aprirai il dettaglio completo
+                      // Mostra dettaglio completo
                       showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
@@ -269,6 +422,12 @@ class _PrestazioniPazienteState extends State<PrestazioniPaziente> {
                             "Dente: ${p['dente']}\n\n"
                             "Note:\n${p['note']}",
                           ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text("CHIUDI"),
+                            ),
+                          ],
                         ),
                       );
                     },

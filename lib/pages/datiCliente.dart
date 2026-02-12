@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 //DICHIARO LE VARIABILI (nome,cognome..) CHE SARANNO INIZIALIZZATE SUCCESSIVAMENTE (grazie a late).
 class datiCliente{

@@ -103,15 +103,15 @@ void initState() {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(onPressed: () async {
-                 int idCliente; //serve per memorizzare l'ID che sara assegnato al cliente
+//serve per memorizzare l'ID che sara assegnato al cliente
                   //1- Se stiamo modificando un cliente esistente (widget.cliente non null) si mantiene stesso ID
                   if (widget.cliente != null) {
-                  idCliente = widget.cliente!.id; //si mantiene stesso ID
+//si mantiene stesso ID
                   } else {
                   //2-altrimenti se nuovo cliente (widget.cliente null) legge, incrementa e assegna l'ID incrementato rispetto l'ultimo
                   await _leggiUltimoId(); //legge (dalla memoria SharedPreferences)
                   ultimoid++; //incrementa 
-                  idCliente = ultimoid; //assegna all'ID il valore incrementato rispetto l'ultimo
+//assegna all'ID il valore incrementato rispetto l'ultimo
 
                 // Aggiorna e salva in memoria il nuovo ultimo ID
                 final prefs = await SharedPreferences.getInstance();
