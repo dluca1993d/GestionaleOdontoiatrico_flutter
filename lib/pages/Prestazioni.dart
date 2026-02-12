@@ -1,8 +1,7 @@
-
 import 'package:esercizi/pages/ClassiPrestazioni/Igiene.dart';
 import 'package:esercizi/pages/ClassiPrestazioni/Visita.dart';
-import 'package:esercizi/pages/ClassiPrestazioni/odontogramma/pages-odontogramma.dart';
-
+import 'package:esercizi/pages/ClassiPrestazioni/odontogramma/denti_data.dart';
+import 'package:esercizi/pages/ClassiPrestazioni/odontogramma/dente_page.dart';
 import 'package:esercizi/pages/pages.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +11,77 @@ class Prestazioni extends StatefulWidget {
   State<Prestazioni> createState() => _Prestazioni();
 }
 
-class _Prestazioni extends State<Prestazioni>{
+class _Prestazioni extends State<Prestazioni> {
+  
+  // Mappa che associa il numero del dente al nome del file immagine
+  final Map<String, String> immaginiDenti = {
+    // Arcata Superiore - Destra
+    "18": "terzo-molare-sup-dx.png",
+    "17": "secondo-molare-sup-dx.png",
+    "16": "primo-molare-sup-dx.png",
+    "15": "secondo-premolare-sup-dx.png",
+    "14": "primo-premolare-sup-dx.png",
+    "13": "canino-sup-dx.png",
+    "12": "incisivo-lat-sup-dx.png",
+    "11": "incisivo-sup-dx.png",
+    // Arcata Superiore - Sinistra
+    "21": "incisivo-sup-sx.png",
+    "22": "incisivo-lat-sup-sx.png",
+    "23": "canino-sup-sx.png",
+    "24": "primo-premolare-sup-sx.png",
+    "25": "secondo-premolare-sup-sx.png",
+    "26": "primo-molare-sup-sx.png",
+    "27": "secondo-molare-sup-sx.png",
+    "28": "terzo-molare-sup-sx.png",
+    // Arcata Inferiore - Destra
+    "48": "terzo-molare-inf-dx.png",
+    "47": "secondo-molare-inf-dx.png",
+    "46": "primo-molare-inf-dx.png",
+    "45": "secondo-premolare-inf-dx.png",
+    "44": "primo-premolare-inf-dx.png",
+    "43": "canino-inf-dx.png",
+    "42": "incisivo-lat-inf-dx.png",
+    "41": "incisivo-inf-dx.png",
+    // Arcata Inferiore - Sinistra
+    "31": "incisivo-inf-sx.png",
+    "32": "incisivo-lat-inf-sx.png",
+    "33": "canino-inf-sx.png",
+    "34": "primo-premolare-inf-sx.png",
+    "35": "secondo-premolare-inf-sx.png",
+    "36": "primo-molare-inf-sx.png",
+    "37": "secondo-molare-inf-sx.png",
+    "38": "terzo-molare-inf-sx.png",
+  };
+
+  // Funzione helper per creare un dente con tooltip e immagine
+  Widget _buildDente(String numeroDente) {
+    final dente = DentiData.trovaDente(numeroDente);
+    final immagine = immaginiDenti[numeroDente];
+    
+    if (dente == null || immagine == null) return SizedBox();
+
+    return Tooltip(
+      message: "${dente.numero} - ${dente.nome}",
+      waitDuration: Duration(milliseconds: 100),
+      showDuration: Duration(milliseconds: 100),
+      preferBelow: false,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DentePage(
+                numeroDente: dente.numero,
+                nomeDente: dente.nome,
+              ),
+            ),
+          );
+        },
+        child: Image.asset("assets/$immagine"),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,184 +91,82 @@ class _Prestazioni extends State<Prestazioni>{
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-
-      body: 
-      Column(
+      body: Column(
         spacing: 25,
         children: [
+          // PULSANTI VISITA E IGIENE
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-          //🦷 Visita 🦷
-          ElevatedButton(onPressed: (){
-                setState(() {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Visita())); });}, 
+              // 🦷 Visita 🦷
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Visita()),
+                    );
+                  });
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(132, 33, 149, 243),
-                  foregroundColor: Colors.white),
-                  child: Text("Visita"),),
-
-          //🦷 Igiene 🦷
-          ElevatedButton(onPressed: (){
-                setState(() {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Igiene())); });}, 
+                  foregroundColor: Colors.white,
+                ),
+                child: Text("Visita"),
+              ),
+              
+              // 🦷 Igiene 🦷
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Igiene()),
+                    );
+                  });
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(132, 33, 149, 243),
-                  foregroundColor: Colors.white),
-                  child: Text("Igiene Dentale"),),],),
+                  foregroundColor: Colors.white,
+                ),
+                child: Text("Igiene Dentale"),
+              ),
+            ],
+          ),
 
-          //🦷 Odontogramma 🦷
-          Text("ODONTOGRAMMA:", style: TextStyle(color: Colors.blue, fontSize: 20),),
+          // 🦷 ODONTOGRAMMA 🦷
+          Text(
+            "ODONTOGRAMMA:",
+            style: TextStyle(color: Colors.blue, fontSize: 20),
+          ),
+          
           Column(
             children: [
+              // ARCATA SUPERIORE
               Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-              // 🦷 ARCATA SUPERIORE - DESTRA
-                Tooltip( 
-                  message: "18-Terzo Molare Superiore DX", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TerzoMolareSupDx())); }, child: Image.asset("assets/terzo-molare-sup-dx.png",))),
-                Tooltip( 
-                  message:"17-Secondo Molare Superiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoMolareSupDx())); }, child: Image.asset("assets/secondo-molare-sup-dx.png")),),
-                Tooltip( 
-                  message:"16-Primo Molare Superiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoMolareSupDx())); }, child: Image.asset("assets/primo-molare-sup-dx.png")),),
-                Tooltip( 
-                  message:"15-Secondo Premolare Superiore Dx", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoPremolareSupDx())); }, child: Image.asset("assets/secondo-premolare-sup-dx.png")),),
-                Tooltip( 
-                  message:"14-Primo Premolare Superiore DX", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoPremolareSupDx())); }, child: Image.asset("assets/primo-premolare-sup-dx.png")),),
-                Tooltip( 
-                  message:"13-Canino Superiore Dx ", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => CaninoSupDx())); }, child: Image.asset("assets/canino-sup-dx.png")),),
-                Tooltip( 
-                  message:"12-Incisivo Laterale Superiore DX", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoLateraleSupDx())); }, child: Image.asset("assets/incisivo-lat-sup-dx.png")),),
-                Tooltip( 
-                  message:"11-Incisivo Superiore Dx", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoSupDx())); }, child: Image.asset("assets/incisivo-sup-dx.png")),),
-              
-              // 🦷 ARCATA SUPERIORE - SINISTRA
-                Tooltip( 
-                  message:"21-Incisivo Superiore SX", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoSupSx())); }, child: Image.asset("assets/incisivo-sup-sx.png")),),
-                Tooltip( 
-                  message:"22-Incisivo Laterale Superiore DX", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => CaninoSupSx())); }, child: Image.asset("assets/incisivo-lat-sup-sx.png")),),
-                Tooltip( 
-                  message:"2-Canino Superiore DX", waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => CaninoSupSx())); }, child: Image.asset("assets/canino-sup-sx.png")),),
-                Tooltip( 
-                  message:"24-Primo Premolare Superiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoPremolareSupSx())); }, child: Image.asset("assets/primo-premolare-sup-sx.png")),),
-                Tooltip( 
-                  message:"25-Secondo Premolare Superiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                    child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoPremolareSupSx())); }, child: Image.asset("assets/secondo-premolare-sup-sx.png")),),
-                Tooltip( 
-                  message:"26-Primo Molare Superiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoMolareSupSx())); }, child: Image.asset("assets/primo-molare-sup-sx.png")),),
-                Tooltip( 
-                  message:"27-Secondo Molare Superiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoMolareSupSx())); }, child: Image.asset("assets/secondo-molare-sup-sx.png")),),
-                Tooltip( 
-                  message:"28-Terzo Molare Superiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TerzoMolareSupSx())); }, child: Image.asset("assets/terzo-molare-sup-sx.png")),),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Superiore Destra (18 → 11)
+                  ...[for (var i = 18; i >= 11; i--) _buildDente(i.toString())],
+                  // Superiore Sinistra (21 → 28)
+                  ...[for (var i = 21; i <= 28; i++) _buildDente(i.toString())],
                 ],
               ),
-              Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-              // 🦷 ARCATA INFERIORE - DESTRA
-                Tooltip( 
-                  message:"48-Terzo Molare Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TerzoMolareInfDx())); }, child: Image.asset("assets/terzo-molare-inf-dx.png")),),
-                Tooltip( 
-                  message:"47-Secondo Molare Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoMolareInfDx())); }, child: Image.asset("assets/secondo-molare-inf-dx.png")),),
-                Tooltip( 
-                  message:"46-Primo Molare Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoMolareInfDx())); }, child: Image.asset("assets/primo-molare-inf-dx.png")),),
-                Tooltip( 
-                  message:"45-Secondo Premolare Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoPremolareInfDx())); }, child: Image.asset("assets/secondo-premolare-inf-dx.png")),),
-                Tooltip( 
-                  message:"44-Primo Premolare Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoPremolareInfDx())); }, child: Image.asset("assets/primo-premolare-inf-dx.png")),),
-                Tooltip( 
-                  message:"43-Canino Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => CaninoInfDx())); }, child: Image.asset("assets/canino-inf-dx.png")),),
-                Tooltip( 
-                  message:"42-Incisivo Laterale Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoLateraleInfDx())); }, child: Image.asset("assets/incisivo-lat-inf-dx.png")),),
-                Tooltip( 
-                  message:"41-Incisivo Inferiore DX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoInfDx())); }, child: Image.asset("assets/incisivo-inf-dx.png")),),
               
-              // 🦷 ARCATA INFERIORE - SINISTRA
-                Tooltip( 
-                  message:"31-Incisivo Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoInfSx())); }, child: Image.asset("assets/incisivo-inf-sx.png")),),
-                Tooltip( 
-                  message:"32-Incisivo Laterale Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => IncisivoLateraleInfSx())); }, child: Image.asset("assets/incisivo-lat-inf-sx.png")),),
-                Tooltip( 
-                  message:"33-Canino Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => CaninoInfSx())); }, child: Image.asset("assets/canino-inf-sx.png")),),
-                Tooltip( 
-                  message:"34-Primo Premolare Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoPremolareInfSx())); }, child: Image.asset("assets/primo-premolare-inf-sx.png")),),
-                Tooltip( 
-                  message:"35-Secondo Premolare Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoPremolareInfSx())); }, child: Image.asset("assets/secondo-premolare-inf-sx.png")),),
-                Tooltip( 
-                  message:"36-Primo Molare Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => PrimoMolareInfSx())); }, child: Image.asset("assets/primo-molare-inf-sx.png")),),
-                Tooltip( 
-                  message:"37-Secondo Molare Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SecondoMolareInfSx())); }, child: Image.asset("assets/secondo-molare-inf-sx.png")),),
-                Tooltip( 
-                  message:"38-Terzo Molare Inferiore SX" , waitDuration: Duration(milliseconds: 100),showDuration: Duration(milliseconds: 100),preferBelow: false, 
-                  child: 
-                  GestureDetector(onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TerzoMolareInfSx())); }, child: Image.asset("assets/terzo-molare-inf-sx.png")),),
+              // ARCATA INFERIORE
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Inferiore Destra (48 → 41)
+                  ...[for (var i = 48; i >= 41; i--) _buildDente(i.toString())],
+                  // Inferiore Sinistra (31 → 38)
+                  ...[for (var i = 31; i <= 38; i++) _buildDente(i.toString())],
                 ],
               ),
             ],
           ),
         ],
       ),
-      );
+    );
   }
 }

@@ -2,16 +2,23 @@ import 'dart:convert';
 import 'package:esercizi/pages/datiCliente.dart';
 import 'package:esercizi/services/SalvaInCartellaClinica.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:esercizi/pages/ClassiPrestazioni/odontogramma/pages-odontogramma.dart';
 import 'package:flutter/material.dart';
 
-class CaninoInfDx extends StatefulWidget {
-  const CaninoInfDx({super.key});
+class DentePage extends StatefulWidget {
+  final String numeroDente;  // es. "43"
+  final String nomeDente;    // es. "Canino Inferiore DX"
+  
+  const DentePage({
+    super.key,
+    required this.numeroDente,
+    required this.nomeDente,
+  });
+
   @override
-  State<CaninoInfDx> createState() => _CaninoInfDx();
+  State<DentePage> createState() => _DentePageState();
 }
 
-class _CaninoInfDx extends State<CaninoInfDx> {
+class _DentePageState extends State<DentePage> {
 
   List<datiCliente> clienti = []; //Carica tutta la lista clienti
   List<datiCliente> clientiFiltrati = []; //lista dei clienti che vengono man mano filtrati
@@ -38,7 +45,7 @@ class _CaninoInfDx extends State<CaninoInfDx> {
    
     return Scaffold(
       appBar: AppBar(
-        title: Text("43-Canino Inferiore DX"),
+        title: Text("${widget.numeroDente} - ${widget.nomeDente}"),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -219,7 +226,7 @@ DropdownButton<String>(
                 cognome: clienteSelezionato!.cognome,
                 data: "${giornoSelezionato!}/${meseSelezionato!}/${annoSelezionato!}",
                 tipoPrestazione: tipologiaSelezionata!,
-                dente: "Canino Inferiore DX",
+                dente: widget.nomeDente,  // 🎯 Usa il nome del dente passato come parametro
                 note: notaDigitata,
                 );
              }, 
@@ -275,5 +282,3 @@ DropdownButton<String>(
     });
   }
 }
-
-//
